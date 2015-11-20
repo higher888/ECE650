@@ -667,11 +667,11 @@ void* VerCover_APPROX2(void* arg)
 
 void pclock(char *msg, clockid_t cid)
        {
-           struct timespec ts;
+	   struct timespec ts;
            printf("%s", msg);
-	   if (clock_gettime(cid, &ts) == -1)
-               handle_error("clock_gettime");
-           printf("%4ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
+	  // if (clock_gettime(cid, &ts) == -1)
+            //   handle_error("clock_gettime");
+           printf("%4ld.%09ld\n", ts.tv_sec, ts.tv_nsec/1000000);
 	   fflush(stdout);	
        }
 
@@ -692,29 +692,28 @@ int main(int argc, char** argv)
 	char* buffer[1];
 	char buf_1[1];
 	char buf_2[2];
-	char** argx;
-	argx[0] = argv[1];
+	
 	
 	pipe (fds_12);  
 
 	pid_rgen = fork();  
 	
-	if (pid_rgen = 0) {
+	if (pid_rgen == 0) {
 	 	for (ix=0;ix<10;ix++)
 		{  
 			pid2 = fork();
-			if (pid2 = 0)
+			if (pid2 == 0)
 			{
 				close (fds_12[0]);
 				dup2 (fds_12[1],STDOUT_FILENO);
-				execvp ("/home/wdietl/graphGen/graphGen",argx);
+				execvp ("/home/wdietl/graphGen/graphGen",argv);
 			}
 		}
 	}
 	else
 	{
 		close (fds_12[1]);
-		dup2 (fds_12[2],STDIN_FILENO); 			
+		dup2 (fds_12[0],STDIN_FILENO); 			
 
 
 		MGraph G;
@@ -740,9 +739,9 @@ int main(int argc, char** argv)
 
 	    while (fgets(str,10000,stdin))
 	    {
-		/*if (str[0] != 's')
+		if (str[0] != 's')
 			printf("%s",str);
-			fflush(stdout);*/
+			fflush(stdout);
 		if (str[0]=='V')
 		{
 		   VertexNum = VStr(str);
@@ -752,9 +751,12 @@ int main(int argc, char** argv)
 		{
 		    Edge_num = ENum(str);
 		    flag = CreateMGraph(&G, Edge_num, VertexNum, str);
-		    CreateALGraph(G,&GL);	    
+		    CreateALGraph(G,&GL);
+		    int i_test;	    
 		    if (Edge_num > 0 && flag == 1)
 		    {
+			for (i_test = 0;i_test<10;i_test++)
+			{
 			s = pthread_create (&thread_CNFSAT,NULL,&VerCover_CNFSAT,&G);
 			if (s != 0)
 		       		handle_error_en(s, "pthread_create");
@@ -763,9 +765,17 @@ int main(int argc, char** argv)
 		       		handle_error_en(s, "pthread_getcpuclockid");
 			pthread_join(thread_CNFSAT,NULL);
 			char ms1[] = "CNF-SAT-VC's CPU time:  ";
-			pclock(ms1, cid_CNFSAT);
+			struct timespec ts;
+           		printf("%s", ms1);
+			clock_gettime(cid_CNFSAT, &ts);
+		//	   if (clock_gettime(cid_CNFSAT, &ts) == -1)
+           	//	    handle_error("clock_gettime");
+          	        printf("%4ld.%09ld\n", ts.tv_sec, ts.tv_nsec/1000);
+	  	        fflush(stdout);	
+
+			//pclock(ms1, cid_CNFSAT);
 			sleep(1);
-		
+	
 			s = pthread_create (&thread_APPROX1,NULL,&VerCover_APPROX1,&G);
 			if (s != 0)
 		       		handle_error_en(s, "pthread_create");
@@ -774,7 +784,15 @@ int main(int argc, char** argv)
 		       		handle_error_en(s, "pthread_getcpuclockid"); 
 			pthread_join(thread_APPROX1,NULL);
 			char ms2[] = "APPROX-VC-1's CPU time:  ";
-			pclock(ms2, cid_APPROX1);
+			struct timespec ts1;
+			printf("%s", ms2);
+			clock_gettime(cid_APPROX1, &ts1);
+		//	   if (clock_gettime(cid_CNFSAT, &ts) == -1)
+           	//	    handle_error("clock_gettime");
+          	        printf("%4ld.%09ld\n", ts1.tv_sec, ts1.tv_nsec/1000);
+	  	        fflush(stdout);	
+
+			//pclock(ms2, cid_APPROX1);
 			sleep(1);
 		
 			s = pthread_create (&thread_APPROX2,NULL,&VerCover_APPROX2,&G);
@@ -785,10 +803,18 @@ int main(int argc, char** argv)
 		       		handle_error_en(s, "pthread_getcpuclockid"); 
 			char ms3[] = "APPROX-VC-2's CPU time:  ";		
 			pthread_join(thread_APPROX2,NULL);	
-			pclock(ms3, cid_APPROX2); 
+			struct timespec ts2;
+			printf("%s", ms3);
+			clock_gettime(cid_APPROX2, &ts2);
+		//	   if (clock_gettime(cid_CNFSAT, &ts) == -1)
+           	//	    handle_error("clock_gettime");
+          	        printf("%4ld.%09ld\n", ts2.tv_sec, ts2.tv_nsec/1000);
+	  	        fflush(stdout);	
+
+			//pclock(ms3, cid_APPROX2); 
 			sleep(1);
 
-		
+			}
 			/*calculate the approximate ratio*/
 			/*float x1, x2, x3;
 			x1 = (float) g[0].vNum;
@@ -806,9 +832,10 @@ int main(int argc, char** argv)
 			//free(g);
 			//g = NULL;
 		
-		    }
+		    
 			//free(g);
 			//g = NULL;
+		    }
 		}
 		else if (str[0]=='s')
 		{
