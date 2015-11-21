@@ -21,6 +21,10 @@
 #define MAXEDGE 999
 #define MAXVEX 999
 
+int vNum1;
+int vNum2;
+int vNum3;
+
 
 typedef int Status;	/* Status is a function type */
 typedef int Boolean; /* Boolean type, the value includes TRUE or FALSE */
@@ -494,7 +498,7 @@ void* VerCover_CNFSAT(void* arg)
 			break; 
 		}		
 	}
-	//h -> vNum = vNum;
+	vNum1 = vNum;
 	return NULL;
 }
 
@@ -594,6 +598,7 @@ void* VerCover_APPROX1(void* arg)
 	free(a_2d);
 	a_2d = NULL;
 
+	vNum2 = vNum;
 	return NULL;
 }
 
@@ -661,6 +666,8 @@ void* VerCover_APPROX2(void* arg)
 
 	free(a_2d);
 	a_2d = NULL;
+
+	vNum3 = vNum;
 
 	return NULL;
 }
@@ -735,6 +742,15 @@ int main(int argc, char** argv)
 		clockid_t cid_APPROX1;
 		clockid_t cid_APPROX2;
 
+		FILE *fp;
+		fp = fopen("CNF.dat","w");
+		FILE *fp1;
+		fp1 = fopen("APPROX1.dat","w");
+		FILE *fp2;
+		fp2 = fopen("APPROX2.dat","w");
+		FILE *fp3;
+		fp3 = fopen("NUM.dat","w");
+
 		char str[10000];
 
 	    while (fgets(str,10000,stdin))
@@ -755,6 +771,7 @@ int main(int argc, char** argv)
 		    int i_test;	    
 		    if (Edge_num > 0 && flag == 1)
 		    {
+			//fprintf(fp,"V = %d\n",VertexNum);
 			for (i_test = 0;i_test<10;i_test++)
 			{
 			s = pthread_create (&thread_CNFSAT,NULL,&VerCover_CNFSAT,&G);
@@ -770,8 +787,9 @@ int main(int argc, char** argv)
 			clock_gettime(cid_CNFSAT, &ts);
 		//	   if (clock_gettime(cid_CNFSAT, &ts) == -1)
            	//	    handle_error("clock_gettime");
-          	        printf("%4ld.%09ld\n", ts.tv_sec, ts.tv_nsec/1000);
+          	        printf("%4ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
 	  	        fflush(stdout);	
+			fprintf(fp,"%4ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
 
 			//pclock(ms1, cid_CNFSAT);
 			sleep(1);
@@ -789,8 +807,9 @@ int main(int argc, char** argv)
 			clock_gettime(cid_APPROX1, &ts1);
 		//	   if (clock_gettime(cid_CNFSAT, &ts) == -1)
            	//	    handle_error("clock_gettime");
-          	        printf("%4ld.%09ld\n", ts1.tv_sec, ts1.tv_nsec/1000);
+          	        printf("%4ld.%09ld\n", ts1.tv_sec, ts1.tv_nsec);
 	  	        fflush(stdout);	
+			fprintf(fp1,"%4ld.%09ld\n", ts1.tv_sec, ts1.tv_nsec);
 
 			//pclock(ms2, cid_APPROX1);
 			sleep(1);
@@ -808,12 +827,14 @@ int main(int argc, char** argv)
 			clock_gettime(cid_APPROX2, &ts2);
 		//	   if (clock_gettime(cid_CNFSAT, &ts) == -1)
            	//	    handle_error("clock_gettime");
-          	        printf("%4ld.%09ld\n", ts2.tv_sec, ts2.tv_nsec/1000);
+          	        printf("%4ld.%09ld\n", ts2.tv_sec, ts2.tv_nsec);
 	  	        fflush(stdout);	
-
+			fprintf(fp2,"%4ld.%09ld\n", ts2.tv_sec, ts2.tv_nsec);
 			//pclock(ms3, cid_APPROX2); 
 			sleep(1);
 
+			printf("%d %d %d\n",vNum1,vNum2,vNum3);		
+			fprintf(fp3,"%d %d %d\n",vNum1,vNum2,vNum3);
 			}
 			/*calculate the approximate ratio*/
 			/*float x1, x2, x3;
