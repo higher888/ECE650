@@ -1,0 +1,10 @@
+all: a5-ece650  multi_thread
+	
+a5-ece650:
+	gcc a5-ece650.c -lm -o a5-ece650
+
+multi_thread:
+	g++ multi_thread.c -L. -lsat -lpthread -lm -lrt -o multi_thread
+
+clean:
+	rm -rf *o a5-ece650 multi_thread
